@@ -1535,6 +1535,8 @@ border-radius: 0px;
 <h1><span class="header-section-number">1</span> Setup</h1>
 <pre class="r"><code>rm(list=ls())
 
+set.seed(2022)
+
 library(jsonlite)
 library(ggplot2)
 library(presize)
@@ -1996,7 +1998,7 @@ anchor points.</p>
 <tr class="odd">
 <td align="left">AC_3</td>
 <td align="left">0.106 (0.098; 0.116)</td>
-<td align="left">0.085 (0.076; 0.095)</td>
+<td align="left">0.085 (0.076; 0.094)</td>
 </tr>
 <tr class="even">
 <td align="left">AC_4</td>
@@ -2011,7 +2013,7 @@ anchor points.</p>
 <tr class="even">
 <td align="left">CO_2</td>
 <td align="left">0.054 (0.049; 0.059)</td>
-<td align="left">0.055 (0.049; 0.062)</td>
+<td align="left">0.055 (0.049; 0.063)</td>
 </tr>
 <tr class="odd">
 <td align="left">CO_3</td>
@@ -2021,7 +2023,7 @@ anchor points.</p>
 <tr class="even">
 <td align="left">CO_4</td>
 <td align="left">0.121 (0.112; 0.130)</td>
-<td align="left">0.123 (0.110; 0.137)</td>
+<td align="left">0.123 (0.110; 0.138)</td>
 </tr>
 <tr class="odd">
 <td align="left">PD_1</td>
@@ -2060,8 +2062,8 @@ anchor points.</p>
 </tr>
 <tr class="even">
 <td align="left">IN_4</td>
-<td align="left">0.124 (0.115; 0.134)</td>
-<td align="left">0.108 (0.098; 0.120)</td>
+<td align="left">0.124 (0.115; 0.133)</td>
+<td align="left">0.108 (0.098; 0.119)</td>
 </tr>
 <tr class="odd">
 <td align="left">SE_1</td>
@@ -2071,17 +2073,17 @@ anchor points.</p>
 <tr class="even">
 <td align="left">SE_2</td>
 <td align="left">0.046 (0.042; 0.050)</td>
-<td align="left">0.045 (0.039; 0.053)</td>
+<td align="left">0.045 (0.039; 0.052)</td>
 </tr>
 <tr class="odd">
 <td align="left">SE_3</td>
-<td align="left">0.068 (0.062; 0.075)</td>
+<td align="left">0.068 (0.063; 0.075)</td>
 <td align="left">0.063 (0.056; 0.072)</td>
 </tr>
 <tr class="even">
 <td align="left">SE_4</td>
 <td align="left">0.098 (0.091; 0.105)</td>
-<td align="left">0.098 (0.086; 0.110)</td>
+<td align="left">0.098 (0.087; 0.109)</td>
 </tr>
 <tr class="odd">
 <td align="left">ME_1</td>
@@ -2091,17 +2093,17 @@ anchor points.</p>
 <tr class="even">
 <td align="left">ME_2</td>
 <td align="left">0.055 (0.050; 0.061)</td>
-<td align="left">0.050 (0.044; 0.057)</td>
+<td align="left">0.050 (0.043; 0.057)</td>
 </tr>
 <tr class="odd">
 <td align="left">ME_3</td>
 <td align="left">0.084 (0.077; 0.093)</td>
-<td align="left">0.070 (0.063; 0.079)</td>
+<td align="left">0.070 (0.063; 0.078)</td>
 </tr>
 <tr class="even">
 <td align="left">ME_4</td>
 <td align="left">0.119 (0.110; 0.130)</td>
-<td align="left">0.110 (0.098; 0.122)</td>
+<td align="left">0.110 (0.098; 0.123)</td>
 </tr>
 <tr class="odd">
 <td align="left">AX_1</td>
@@ -2111,7 +2113,7 @@ anchor points.</p>
 <tr class="even">
 <td align="left">AX_2</td>
 <td align="left">0.044 (0.040; 0.049)</td>
-<td align="left">0.042 (0.035; 0.048)</td>
+<td align="left">0.042 (0.036; 0.048)</td>
 </tr>
 <tr class="odd">
 <td align="left">AX_3</td>
@@ -2121,7 +2123,7 @@ anchor points.</p>
 <tr class="even">
 <td align="left">AX_4</td>
 <td align="left">0.101 (0.094; 0.109)</td>
-<td align="left">0.093 (0.083; 0.104)</td>
+<td align="left">0.093 (0.083; 0.105)</td>
 </tr>
 </tbody>
 </table>
@@ -2182,7 +2184,7 @@ separately</h1>
 <td align="center">0.082 (0.075; 0.089)</td>
 <td align="center">0.111 (0.102; 0.122)</td>
 <td align="center">0.072 (0.066; 0.078)</td>
-<td align="center">0.068 (0.062; 0.075)</td>
+<td align="center">0.068 (0.063; 0.075)</td>
 <td align="center">0.084 (0.077; 0.093)</td>
 <td align="center">0.073 (0.067; 0.079)</td>
 </tr>
@@ -2191,7 +2193,7 @@ separately</h1>
 <td align="center">0.148 (0.138; 0.158)</td>
 <td align="center">0.121 (0.112; 0.130)</td>
 <td align="center">0.160 (0.148; 0.173)</td>
-<td align="center">0.124 (0.115; 0.134)</td>
+<td align="center">0.124 (0.115; 0.133)</td>
 <td align="center">0.098 (0.091; 0.105)</td>
 <td align="center">0.119 (0.110; 0.130)</td>
 <td align="center">0.101 (0.094; 0.109)</td>
@@ -2239,32 +2241,32 @@ separately</h1>
 <tr class="even">
 <td align="left">lvl_2</td>
 <td align="center">0.056 (0.049; 0.065)</td>
-<td align="center">0.055 (0.049; 0.062)</td>
+<td align="center">0.055 (0.049; 0.063)</td>
 <td align="center">0.061 (0.052; 0.070)</td>
 <td align="center">0.038 (0.033; 0.044)</td>
-<td align="center">0.045 (0.039; 0.053)</td>
-<td align="center">0.050 (0.044; 0.057)</td>
-<td align="center">0.042 (0.035; 0.048)</td>
+<td align="center">0.045 (0.039; 0.052)</td>
+<td align="center">0.050 (0.043; 0.057)</td>
+<td align="center">0.042 (0.036; 0.048)</td>
 </tr>
 <tr class="odd">
 <td align="left">lvl_3</td>
-<td align="center">0.085 (0.076; 0.095)</td>
+<td align="center">0.085 (0.076; 0.094)</td>
 <td align="center">0.082 (0.073; 0.093)</td>
 <td align="center">0.099 (0.088; 0.111)</td>
 <td align="center">0.064 (0.057; 0.071)</td>
 <td align="center">0.063 (0.056; 0.072)</td>
-<td align="center">0.070 (0.063; 0.079)</td>
+<td align="center">0.070 (0.063; 0.078)</td>
 <td align="center">0.064 (0.056; 0.072)</td>
 </tr>
 <tr class="even">
 <td align="left">lvl_4</td>
 <td align="center">0.128 (0.115; 0.142)</td>
-<td align="center">0.123 (0.110; 0.137)</td>
+<td align="center">0.123 (0.110; 0.138)</td>
 <td align="center">0.139 (0.126; 0.154)</td>
-<td align="center">0.108 (0.098; 0.120)</td>
-<td align="center">0.098 (0.086; 0.110)</td>
-<td align="center">0.110 (0.098; 0.122)</td>
-<td align="center">0.093 (0.083; 0.104)</td>
+<td align="center">0.108 (0.098; 0.119)</td>
+<td align="center">0.098 (0.087; 0.109)</td>
+<td align="center">0.110 (0.098; 0.123)</td>
+<td align="center">0.093 (0.083; 0.105)</td>
 </tr>
 </tbody>
 </table>
@@ -2312,30 +2314,30 @@ difference</h1>
 <td align="left">lvl_2</td>
 <td align="center">0.007 (-0.004; 0.017)</td>
 <td align="center">-0.001 (-0.010; 0.007)</td>
-<td align="center">0.007 (-0.004; 0.019)</td>
+<td align="center">0.007 (-0.005; 0.019)</td>
 <td align="center">-0.005 (-0.012; 0.001)</td>
 <td align="center">0.001 (-0.008; 0.008)</td>
-<td align="center">0.005 (-0.003; 0.013)</td>
+<td align="center">0.005 (-0.003; 0.014)</td>
 <td align="center">0.003 (-0.005; 0.010)</td>
 </tr>
 <tr class="odd">
 <td align="left">lvl_3</td>
-<td align="center">0.021 (0.008; 0.034)</td>
-<td align="center">-0.000 (-0.013; 0.011)</td>
+<td align="center">0.021 (0.009; 0.034)</td>
+<td align="center">-0.000 (-0.013; 0.012)</td>
 <td align="center">0.012 (-0.003; 0.027)</td>
-<td align="center">0.008 (-0.001; 0.018)</td>
+<td align="center">0.008 (-0.001; 0.017)</td>
 <td align="center">0.005 (-0.005; 0.015)</td>
-<td align="center">0.014 (0.002; 0.025)</td>
+<td align="center">0.014 (0.003; 0.025)</td>
 <td align="center">0.009 (-0.001; 0.019)</td>
 </tr>
 <tr class="even">
 <td align="left">lvl_4</td>
 <td align="center">0.020 (0.003; 0.037)</td>
 <td align="center">-0.002 (-0.019; 0.014)</td>
-<td align="center">0.021 (0.002; 0.039)</td>
-<td align="center">0.016 (0.001; 0.030)</td>
+<td align="center">0.021 (0.002; 0.040)</td>
+<td align="center">0.016 (0.002; 0.030)</td>
 <td align="center">0.001 (-0.013; 0.014)</td>
-<td align="center">0.009 (-0.006; 0.025)</td>
+<td align="center">0.009 (-0.007; 0.025)</td>
 <td align="center">0.008 (-0.006; 0.020)</td>
 </tr>
 </tbody>

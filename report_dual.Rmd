@@ -1,0 +1,465 @@
+---
+title: "MobQoL OPUF value set GP vs MI"
+date: "22 November 2022"
+output: 
+  md_document:
+    toc: no
+knit: (function(inputFile, encoding) { 
+          rmarkdown::render(inputFile,
+                        encoding=encoding, 
+                        output_file="README.md") })
+---
+
+
+This document contains the data, source code and main results for **"Developing preference-based value sets for the MobQoL-7D: Practical application of the Online Elicitation of Personal Utility Functions (OPUF) tool"** by Nathan Bray, Rhiannon Tudor Edwards, Paul Schneider.
+
+
+<br>hr><br>
+
+# Setup
+
+```{r}
+rm(list=ls())
+
+set.seed(2022)
+
+library(jsonlite)
+library(ggplot2)
+library(presize)
+library(reshape2)
+
+library(knitr)
+
+# load utility functions
+source("./R/mobqol_util.R")
+
+# define dimension ID
+ds_dims = c("AC","CO","PD","IN","SE","ME","AX")
+
+# load eligible id 
+eligible_ids_gp = read.csv("./data/gp_anonymised.csv")$id
+eligible_ids_mi = read.csv("./data/mi_anonymised.csv")$id
+# load raw response data
+mq_jsons = read_json("./data/respones_anonymised.json")
+# retrieve and process data from JSON
+# N.B.: eligible ids are provided to exclude respondents who filled in
+# both surveys (i.e. only including them to the one they filled in first)
+gp = retrieveMobQoLPUFs(raw_jsons = mq_jsons, eligible_ids = eligible_ids_gp)
+mi = retrieveMobQoLPUFs(mq_jsons, eligible_ids = eligible_ids_mi)
+```
+
+
+# Descriptive stats
+
+Number of participants included in the analysis: **`r gp$total_n`** in the GP group; and **`r mi$total_n`** in the MI group.
+
+ 
+# demographic characteristics
+
+```{r results='asis'}
+# Compare demographic characteristics between GP and MI group
+group_vars = c("gender","age","any_mobility_problems","mobility_problems_meq_6m")
+res_dual = c()
+for(group in group_vars){
+  # GP
+  t_gp = table(gp$groups_df$value[gp$groups_df$group == group])
+  tn_gp = names(t_gp)
+  res_gp = paste(t_gp, " (", round(t_gp/length(unique(gp$groups_df$id[gp$groups_df$group == group])),3)*100,"%)", sep ="")
+  names(res_gp) = tn_gp
+  df_gp = data.frame(var = names(res_gp),value = res_gp)
+  
+  # MI
+  t_mi = table(mi$groups_df$value[mi$groups_df$group == group])
+  tn_mi = names(t_mi)
+  res_mi = paste(t_mi, " (", round(t_mi/length(unique(mi$groups_df$id[mi$groups_df$group == group])),3)*100,"%)", sep ="")
+  names(res_mi) = tn_mi
+  df_mi = data.frame(var = names(res_mi),value = res_mi)
+  
+  df_dual = merge(df_gp, df_mi, by = "var", all = T,suffixes = c("GP","MI"))
+  
+  row_insert = cbind(group,"","")
+  colnames(row_insert) = names(df_dual)
+  
+  res_dual_group = rbind(row_insert,df_dual)
+  res_dual = rbind(res_dual, res_dual_group)
+}
+res_dual[is.na(res_dual)] = ""
+print(kable(res_dual,col.names = c("Group","GP","MI")))
+```
+
+
+
+# Survey completion times
+
+Mean completion time in the GP group = **`r round(mean(gp$time_df$seconds/60),1)` minutes (SD = `r round(sd(gp$time_df$seconds/60,1))`)**
+
+Mean completion time in the MI group = **`r round(mean(mi$time_df$seconds/60),1)` minutes (SD = `r round(sd(mi$time_df$seconds/60,1))`)**
+
+
+```{r}
+kable(
+  cbind(
+    cbind(round(summary(round(gp$time_df$seconds/60,1)) ,1)),
+    cbind(round(summary(round(mi$time_df$seconds/60,1)) ,1))
+  ),
+  col.names = c("GP", "MI"),
+  caption = "Completion time (mins)"
+  )
+```
+
+
+
+# Own health state
+
+```{r}
+# GP
+fh_str = paste0(sum(gp$own_state_df$state == "1111111"), " (",round(sum(gp$own_state_df$state == "1111111")/gp$n_pufs*100),"%)")
+only_minor = grepl("2",gp$own_state_df$state) &!grepl("3",gp$own_state_df$state) & !grepl("4",gp$own_state_df$state) 
+only_minor_str = paste0(
+  sum(only_minor), " (",
+  round(sum(only_minor)/gp$n_pufs*100),"%)"
+  )
+severe = grepl("4",gp$own_state_df$state) 
+severe_str = paste0(
+  sum(severe), " (",
+  round(sum(severe)/gp$n_pufs*100),"%)"
+  )
+severity_scores = unlist(lapply(strsplit(gp$own_state_df$state,""),\(x)sum(as.numeric(x))))
+severity_scores_str = paste0(round(mean(severity_scores),1), " (", round(sd(severity_scores),1),")")
+
+gp_hs = c(fh_str,only_minor_str,severe_str,severity_scores_str)
+
+# MI
+fh_str = paste0(sum(mi$own_state_df$state == "1111111"), " (",round(sum(mi$own_state_df$state == "1111111")/mi$n_pufs*100),"%)")
+only_minor = grepl("2",mi$own_state_df$state) &!grepl("3",mi$own_state_df$state) & !grepl("4",mi$own_state_df$state)
+only_minor_str = paste0(
+  sum(only_minor), " (",
+  round(sum(only_minor)/mi$n_pufs*100),"%)"
+  )
+severe = grepl("4",mi$own_state_df$state)
+severe_str = paste0(
+  sum(severe), " (",
+  round(sum(severe)/mi$n_pufs*100),"%)"
+  )
+severity_scores = unlist(lapply(strsplit(mi$own_state_df$state,""),\(x)sum(as.numeric(x))))
+severity_scores_str = paste0(round(mean(severity_scores),1), " (", round(sd(severity_scores),1),")")
+  
+
+
+
+mi_hs = c(fh_str,only_minor_str,severe_str,severity_scores_str)
+
+hs_dual = cbind(gp_hs,mi_hs)
+rownames(hs_dual) = c("No problems","Only minor","Severe in at least 1","Mean (SD) severity score")
+colnames(hs_dual) = c("GP","MI")
+
+kable(hs_dual,caption = "Reported health state profiles")
+
+```
+
+N.B. Minimum severity score = 7
+
+
+# OPUF responses
+
+# Dimension weights
+
+```{r}
+# GP
+dim_weights_gp = by(gp$weights_df$value, gp$weights_df$dim_id, \(dim){
+      paste(round(mean(dim),1), " (",round(sd(dim),1),")",sep = "")
+})
+dim_ranks_gp = rank(-by(gp$weights_df$value, gp$weights_df$dim_id, mean))
+# MI
+dim_weights_mi = by(mi$weights_df$value, mi$weights_df$dim_id, \(dim){
+    paste(round(mean(dim),1), " (",round(sd(dim),1),")",sep = "")
+})
+dim_ranks_mi = rank(-by(mi$weights_df$value, mi$weights_df$dim_id, mean))
+# combined
+dim_weights_tbl = cbind(dim_weights_gp,dim_ranks_gp,dim_weights_mi,dim_ranks_mi)
+rownames(dim_weights_tbl) = names(dim_weights_gp)
+kable(dim_weights_tbl, col.names = c("GP Mean (SD)","GP Rank","MI Mean (SD)","MI Rank"))
+```
+
+
+
+
+```{r}
+dim_weights_gp = by(gp$weights_df$value, gp$weights_df$dim_id, mean)
+dim_weights_mi = by(mi$weights_df$value, mi$weights_df$dim_id, mean)
+
+weights_df = data.frame(
+  group = c(rep("GP",7),rep("MI",7)),
+  dim = names(dim_weights_gp),
+  value = c(dim_weights_gp,dim_weights_mi)
+)
+
+ggplot(weights_df, aes(fill=group, y=value, x=dim)) + 
+    geom_bar(position="dodge", stat="identity", alpha = 0.7, color = "lightgray") +
+  theme_minimal() +
+  scale_fill_viridis_d(name = "Sample") +
+  # theme(legend.position = "none") +
+  ggtitle("Mean dimension weights by group")
+```
+
+
+
+# Level ratings
+
+```{r}
+lvl_ratings_gp = lapply(ds_dims,\(dim){
+    s_ = grepl(dim,gp$ratings_df$lvl_id) & !grepl("_3",gp$ratings_df$lvl_id) & !grepl("_0",gp$ratings_df$lvl_id)
+    df_ = gp$ratings_df[s_,]
+    x = by(df_$value,df_$lvl_id,\(lvl){
+        paste(round(mean(lvl),1), " (",round(sd(lvl),1),")",sep = "")
+    })
+    x = rbind(c(""),matrix(x))
+    rownames(x) = c(dim,"lvl2","lvl3")
+    x
+  })
+lvl_ratings_mi = lapply(ds_dims,\(dim){
+    s_ = grepl(dim,mi$ratings_df$lvl_id) & !grepl("_3",mi$ratings_df$lvl_id) & !grepl("_0",mi$ratings_df$lvl_id)
+    df_ = mi$ratings_df[s_,]
+    x = by(df_$value,df_$lvl_id,\(lvl){
+        paste(round(mean(lvl),1), " (",round(sd(lvl),1),")",sep = "")
+    })
+    x = rbind(c(""),matrix(x))
+    rownames(x) = c(dim,"lvl2","lvl3")
+    x
+  })
+
+lvl_ratings_tbl_gp = do.call(rbind, lvl_ratings_gp)
+lvl_ratings_tbl_mi = do.call(rbind, lvl_ratings_mi)
+lvl_ratings_tbl_dual = cbind(lvl_ratings_tbl_gp, lvl_ratings_tbl_mi)
+kable(lvl_ratings_tbl_dual, col.names = c("GP Mean (SD)","MI Mean (SD)"))
+```
+
+
+
+# Anchoring
+
+In the **GP** group, **`r sum((1-gp$anchor_df$anchor)>0)` (`r round(sum((1-gp$anchor_df$anchor)>0)/gp$n_pufs*100)`%)** Participants indicated they would prefer the worst state over being dead. Correspondingly, **`r sum((1-gp$anchor_df$anchor)<=0)` (`r round(sum((1-gp$anchor_df$anchor)<=0)/gp$n_pufs*100)`%)** Participants indicated they would prefer being dead over the worst state or be indifferent.
+
+In the **MI** group, **`r sum((1-mi$anchor_df$anchor)>0)` (`r round(sum((1-mi$anchor_df$anchor)>0)/mi$n_pufs*100)`%)** Participants indicated they would prefer the worst state over being dead. Correspondingly, **`r sum((1-mi$anchor_df$anchor)<=0)` (`r round(sum((1-mi$anchor_df$anchor)<=0)/mi$n_pufs*100)`%)** Participants indicated they would prefer being dead over the worst state or be indifferent. 
+
+```{r}
+# GP 
+# 'extreme preferences':
+# sum(gp$anchor_df$anchor> 2) # n participants
+# round(sum(gp$anchor_df$anchor> 2)/gp$n_pufs*100) # %
+# Thus: trim anchor points to -1 (this is commonly done)
+gp_trimmed = gp$anchor_df$anchor
+gp_trimmed[gp_trimmed> 2] = 2
+# with and without the outliers, new mean anchor point is different:
+# 1-mean(gp_trimmed);sd(gp_trimmed);
+
+# MI
+# 'extreme preferences':
+# sum(mi$anchor_df$anchor> 2) # n participants
+# round(sum(mi$anchor_df$anchor> 2)/mi$n_pufs*100) # %
+mi_trimmed = mi$anchor_df$anchor
+mi_trimmed[mi_trimmed> 2] = 2
+
+# distribution of achor points
+ggplot() +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_density(aes(1-gp_trimmed, fill = "GP"), col = "black", alpha = 0.5) +
+  geom_density(aes(1-mi_trimmed, fill = "MI"), col = "black", alpha = 0.4) +
+  scale_fill_viridis_d(name  = "Sample") +
+  xlab("Density - distribution of utility values for the worst state") +
+  theme_minimal()
+
+```
+
+After capping utlity scale at -1 (which is commonly done), the mean (SD) anchor point (i.e. the utility of the worst health state) was **`r 1-round(mean(gp_trimmed),3)` (`r round(sd(gp_trimmed),3)`)** in the GP group, and **`r round(1-mean(mi_trimmed),3)` (`r round(sd(mi_trimmed),3)`)** in the MI group.
+
+N.B. In the GP group, `r sum(gp$anchor_df$anchor> 2)` (`r round(sum(gp$anchor_df$anchor> 2)/gp$n_pufs*100)` %) participants had anchor points below -1. In the MI group, there were `r sum(mi$anchor_df$anchor> 2)` (`r round(sum(mi$anchor_df$anchor> 2)/mi$n_pufs*100)` %) participants who had such low anchor points.
+
+
+
+# MobQol value sets
+
+```{r}
+# Social preference model
+# GP
+gp_mean_est = formatC(apply(gp$pufs_trimmed,2,mean),digits = 3, format = "f")
+gp_mean_boot = replicate(10000,apply(gp$pufs_trimmed[sample(1:nrow(gp$pufs_trimmed),size = nrow(gp$pufs_trimmed),replace = T),],2,mean))
+gp_mean_boot = formatC(apply(gp_mean_boot,1,quantile,probs = c(0.025,0.975)),digits = 3, format = "f")
+gp_m_95 = sapply(1:ncol(gp_mean_boot), \(i) paste(gp_mean_est[i]," (",gp_mean_boot[1,i],"; ",gp_mean_boot[2,i],")",sep = ""))
+
+# MI
+mi_mean_est = formatC(apply(mi$pufs_trimmed,2,mean),digits = 3, format = "f")
+mi_mean_boot = replicate(10000,apply(mi$pufs_trimmed[sample(1:nrow(mi$pufs_trimmed),size = nrow(mi$pufs_trimmed),replace = T),],2,mean))
+mi_mean_boot = formatC(apply(mi_mean_boot,1,quantile,probs = c(0.025,0.975)),digits = 3, format = "f")
+mi_m_95 = sapply(1:ncol(mi_mean_boot), \(i) paste(mi_mean_est[i]," (",mi_mean_boot[1,i],"; ",mi_mean_boot[2,i],")",sep = ""))
+
+# Dual
+dual_m_95 = cbind(gp_m_95,mi_m_95)
+rownames(dual_m_95) = paste0(rep(ds_dims, each = 4),"_",1:4)
+kable(
+  dual_m_95, 
+  col.names = c("GP","MI"),
+  caption = "Social (GP) and MI-based value set for the MobQoL - mean and 95%CI"
+  )
+```
+
+# Value sets separately
+
+## GP
+
+```{r}
+kable(matrix(
+  gp_m_95,
+  ncol = 7,
+  dimnames = list(paste0("lvl_", 1:4), ds_dims)
+),
+caption = "GP",
+align = "c")
+```
+
+## MI
+
+```{r}
+kable(matrix(
+  mi_m_95,
+  ncol = 7,
+  dimnames = list(paste0("lvl_", 1:4), ds_dims)
+),
+caption = "MI",
+align = "c")
+```
+
+
+# Value set difference
+
+```{r}
+# mean difference
+m_diff = apply(gp$pufs_trimmed,2,mean) - apply(mi$pufs_trimmed,2,mean)
+m_diff_str = formatC(m_diff,digits = 3, format = "f")
+
+# bootstrapped 95% conf ints
+boots = 10000
+s_gp = replicate(boots, sample(1:nrow(gp$pufs_trimmed),replace = T))
+s_mi = replicate(boots, sample(1:nrow(mi$pufs_trimmed),replace = T))
+res = matrix(data = NA,ncol = ncol(mi$pufs_trimmed), nrow=boots )
+for(i in 1:boots){
+  s_gp_i = s_gp[,i]
+  m_gp = apply(gp$pufs_trimmed[s_gp_i,],2,mean)
+  
+  s_mi_i = s_mi[,i]
+  m_mi = apply(mi$pufs_trimmed[s_mi_i,],2,mean)
+  
+  res[i,] = m_gp - m_mi
+  
+}
+
+res_str = apply(res,2,\(x){
+  ci95 = quantile(x,c(0.025,0.975))
+  ci95_str = formatC(ci95,digits = 3, format = "f")
+  return(ci95_str)
+})
+
+res_str_mat = paste0(m_diff_str, " (",res_str[1,],"; ",res_str[2,],")")
+
+kable(
+  matrix(
+    data = res_str_mat, 
+    ncol = 7, 
+    dimnames = list(paste0("lvl_",1:4),ds_dims)
+    ), 
+  caption = "GP - MI difference",
+  align = "c"
+  )
+```
+
+
+
+
+```{r}
+# social value set
+social_model = matrix(apply(gp$pufs_trimmed,2,mean), ncol = length(ds_dims))
+ds_expanded = expand.grid(lapply(1:7, \(x) 1:4))
+ds_str = apply(ds_expanded,1,\(x) paste0(x,collapse=""))
+gp_vs = c()
+for(i in 1:nrow(ds_expanded)){
+  v_ = 1
+  for(j in seq_along(ds_expanded[i,])){
+    v_ = v_ - social_model[ds_expanded[i,j],j]
+  }
+  gp_vs = c(gp_vs, v_)
+}
+
+gp_hs_ranking = rank(-gp_vs)
+
+
+mi_model = matrix(apply(mi$pufs_trimmed,2,mean), ncol = length(ds_dims))
+mi_vs = c()
+for(i in 1:nrow(ds_expanded)){
+  v_ = 1
+  for(j in seq_along(ds_expanded[i,])){
+    v_ = v_ - mi_model[ds_expanded[i,j],j]
+  }
+  mi_vs = c(mi_vs, v_)
+}
+
+mi_hs_ranking = rank(-mi_vs)
+
+dual_vs = data.frame(
+  state = ds_str,
+  gp = gp_vs,
+  gp_vs_rank = gp_hs_ranking,
+  mi = mi_vs,
+  mi_rank = mi_hs_ranking
+)
+dual_vs$util_diff = dual_vs$gp - dual_vs$mi
+dual_vs$rank_diff = dual_vs$gp_vs_rank - dual_vs$mi_rank
+write.csv(dual_vs, file = "./output/dual_vs.csv")
+# (see sample health state values below and full results in separate file 'output/dual_vs.csv')
+
+```
+
+
+# Number of states worse than dead?
+
+Neither in the GP nor in the MI group is the utility value of any states negative. On average, both groups consider all health state better than dead.
+
+
+# Value set visualisation
+```{r}
+ggplot() +
+  geom_hline(yintercept = 0, col = "gray", size = 0.5) +
+  # geom_line(aes(x = 1:length(gp_hs_ranking), y = gp_vs[gp_hs_ranking])) +
+  geom_line(data = dual_vs, aes(x=gp_vs_rank, y = gp, col = "GP"), size = 0.8, alpha =.7) +
+  geom_line(data = dual_vs, aes(x=gp_vs_rank, y = mi, col = "MI"), size = 0.5, alpha =.7) +
+  scale_color_viridis_d(name = "Sample") +
+  ylab("HRQoL / Utility") +
+  xlab("MobQoL states - ranked from best to worst") +
+  theme_minimal()
+```
+
+
+# Distribution of utility values
+```{r}
+  ggplot() +
+  geom_histogram(data = dual_vs, aes(gp, fill = "GP"),color="darkgray", size = 0.8, alpha =.9, binwidth = 0.01) +
+  geom_histogram(data = dual_vs, aes(mi, fill = "MI"),color="gray", size = 0.8, alpha =.6,binwidth = 0.01) +
+  scale_fill_viridis_d(name = "Sample") +
+  ylab("Frequency") +
+  xlab("HRQoL / Utility") +
+  theme_minimal()
+```
+
+
+# Value set table - GP vs MI, top and bottom 100 states (of all 16,384 states)
+```{r}
+dual_vs = dual_vs[order(dual_vs$gp_vs_rank),]
+kable(
+  rbind(head(dual_vs, 100),tail(dual_vs, 100)), 
+  col.names = c("Health state","GP utility","GP rank","MI utility", "MI rank","Util diff","Rank diff"),
+  caption = "GP vs MI value sets",
+  row.names = F
+  )
+```
+
+
+

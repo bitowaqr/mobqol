@@ -3,7 +3,7 @@ This document contains the data, source code and main results for
 application of the Online Elicitation of Personal Utility Functions
 (OPUF) tool”** by Nathan Bray, Rhiannon Tudor Edwards, Paul Schneider.
 
-<br>hr&gt;<br>
+<br><hr&gt;<br>
 
 # Setup
 
